@@ -1,7 +1,56 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
+
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
+
+  Future<void> _register() async {
+    final name = nameController.text.trim();
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+    final confirmPassword = confirmPasswordController.text.trim();
+
+    if (name.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Todos los campos son obligatorios")),
+      );
+      return;
+    }
+
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Las contraseñas no coinciden")),
+      );
+      return;
+    }
+
+    try {
+      final api = ApiService();
+      await api.register(name, email, password);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Registro exitoso, ahora inicia sesión")),
+      );
+      Navigator.pop(context); // volver al login
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error al registrar: $e")));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,36 +80,48 @@ class RegisterScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               TextField(
+                controller: nameController,
                 decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.person),
+                  prefixIcon: const Icon(Icons.person),
                   labelText: "Nombre completo",
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
+                controller: emailController,
                 decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.email),
+                  prefixIcon: const Icon(Icons.email),
                   labelText: "Correo electrónico",
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
+                controller: passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.lock),
+                  prefixIcon: const Icon(Icons.lock),
                   labelText: "Contraseña",
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
+                controller: confirmPasswordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.lock),
+                  prefixIcon: const Icon(Icons.lock),
                   labelText: "Confirmar contraseña",
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -73,7 +134,7 @@ class RegisterScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(24),
                     ),
                   ),
-                  onPressed: () {},
+                  onPressed: _register,
                   child: const Padding(
                     padding: EdgeInsets.symmetric(vertical: 14),
                     child: Text(
@@ -90,7 +151,6 @@ class RegisterScreen extends StatelessWidget {
                   const Text("¿Ya tienes una cuenta? "),
                   GestureDetector(
                     onTap: () {
-                      // Navega a la pantalla de inicio de sesión
                       Navigator.pop(context);
                     },
                     child: Text(
